@@ -34,36 +34,63 @@ export class CursosFormComponent implements OnInit {
     //     });
     //   });
 
-    this.route.params
-      .pipe(
-        map((params: any) => params['id']),
-        switchMap((id) => this.service.loadById(id))
-      )
-      .subscribe(curso => this.updateForm(curso));       
-        
-      this.form = this.fb.group({
-      id: [null],
-      nome: [null, [Validators.minLength(3), Validators.maxLength(40), Validators.required]]
+    // this.route.params
+    //   .pipe(
+    //     map((params: any) => params['id']),
+    //     switchMap((id) => this.service.loadById(id))
+    //   )
+    //   .subscribe(curso => this.updateForm(curso));       
+    
+    const curso = this.route.snapshot.data['curso'];
 
-    })
+    this.form = this.fb.group({
+    id: [curso.id],
+    nome: [curso.nome, [Validators.minLength(3), Validators.maxLength(40), Validators.required]]
+
+    });
 
   }
-  updateForm(curso) {
-    this.form.patchValue({
-      id: curso.id,
-      nome: curso.nome
-    })
-  }
+  // updateForm(curso) {
+  //   this.form.patchValue({
+  //     id: curso.id,
+  //     nome: curso.nome
+  //   })
+  // }
 
   onSubmit() {
     this.submitted = true;
     console.log(this.form.value);
     if (this.form.valid)
       console.log('submit');
-    this.service.create(this.form.value).subscribe(
-      succcess => { this.modal.showAlertSuccess('sucesso'); this.location.back(); },
-      error => this.modal.showAlertDanger("Erro ao cadastrar curso"),
-      () => console.log('request completo'));
+
+    let msgSucesso = '';
+    let msgErro = '';
+    if(this.form.value.id){
+      msgSucesso = 'Curso atualizado com sucesso';
+      msgErro = 'Erro ao atualizar curso, tente novamente mais tarde.'
+    }
+    else{
+      msgSucesso = 'curso cadastrado com sucesso';
+      msgErro = 'erro ao cadastrar curso. tente novamente mais tarde.';
+    }
+
+    this.service.save(this.form.value).subscribe(
+      success =>{ this.modal.showAlertSuccess(msgSucesso); this.location.back(); },
+      error => { this.modal.showAlertDanger(msgErro)}
+    )  
+
+    // if (this.form.value.id) {
+    //   this.service.update(this.form.value).subscribe(
+    //     succcess => { this.modal.showAlertSuccess('sucesso'); this.location.back(); },
+    //     error => this.modal.showAlertDanger("Erro ao atualizar curso"),
+    //     () => console.log('update completo'));
+    // }
+    // else {
+    //   this.service.create(this.form.value).subscribe(
+    //     succcess => { this.modal.showAlertSuccess('sucesso'); this.location.back(); },
+    //     error => this.modal.showAlertDanger("Erro ao cadastrar curso"),
+    //     () => console.log('request completo'));
+    // }
 
   }
   onCancel() {
